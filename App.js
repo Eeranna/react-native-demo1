@@ -1,34 +1,41 @@
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
-import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, Text, View, FlatList } from 'react-native';
+import GoalItem from './components/GoalItem';
+import GoalInput from './components/GoalInput';
 
 export default function App() {
-
-  const [enteredGoalText, setEnteredGoalText] = useState('');
   const [courseGoals, setCourseGoals] = useState([]);
 
-  function goalInputHandler(enteredText) {
-    setEnteredGoalText(enteredText);
+  function addGoalHandler(enteredGoalText) {
+    setCourseGoals(currentCourseGoals => [
+      ...currentCourseGoals, 
+      {text: enteredGoalText, id: Math.random().toString()}
+      ]);
   }
 
-  function addGoalHandler() {
-    setCourseGoals(currentCourseGoals => [
-      ...courseGoals, 
-      enteredGoalText]);
+  function deleteGoalHandler(id) {
+    setCourseGoals((currentCourseGoals) => {
+      return currentCourseGoals.filter((goal) => goal.id !== id);
+    })
   }
 
   return (
     <View style={styles.appContainer}>
-      <View style={styles.inputContainer}>
-        <TextInput 
-          style={styles.textInput} 
-          placeholder='Your course goal' 
-          onChangeText={goalInputHandler}/>
-        <Button title='Add Goal' onPress={addGoalHandler}/>
-      </View>
+      <GoalInput onAddGoal={addGoalHandler} />
       <View style={styles.galsContainer}>
-        <Text>List of goals...</Text>
-        {courseGoals.map((goal) => <Text key={goal}>{goal}</Text>)}
+        <FlatList data={courseGoals} renderItem={(itemData) => {
+          return (
+            <GoalItem 
+              text={itemData.item.text} 
+              id={itemData.item.id} 
+              onDeleteItem={deleteGoalHandler}/>
+          )
+        }} 
+        keyExtractor={(item, index) => {
+          return item.id;
+        }}
+        alwaysBounceVertical={false} />
       </View>
       <View 
         style={{ 
@@ -68,7 +75,7 @@ export default function App() {
         >
           <Text>3</Text>
         </View>
-    </View>
+      </View>
     </View>
   );
 }
@@ -78,15 +85,6 @@ const styles = StyleSheet.create({
    flex: 1,
    padding: 50, 
    paddingHorizontal: 16
-  },
-  inputContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    marginBottom: 24,
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingBottom: 24,
-    borderBottomColor: '#cccccc'
   },
   textInput: {
     borderWidth: 1,
